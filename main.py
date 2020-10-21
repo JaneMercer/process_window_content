@@ -1,6 +1,6 @@
 from capture_window import get_image_, get_window
 
-exe_name = 'Telegram.exe'  # Name of the process for which this script will search for windows
+exe_name = 'chrome.exe'  # Name of the process for which this script will search for windows
 # run = 1  # bool - should the program continue to search
 wrong_pids = []  # list of processed PIDs with no window to show or/and windows that were already shown
 prev_foundPIDs = []

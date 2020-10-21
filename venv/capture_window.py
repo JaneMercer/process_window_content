@@ -7,11 +7,10 @@ import numpy as np
 import cv2
 import time
 
-
 def enum_window_callback(hwnd, pid_and_windows):
     pid, windows = pid_and_windows
     tid, current_pid = win32process.GetWindowThreadProcessId(hwnd)
-    if pid == current_pid:
+    if pid == current_pid and win32gui.IsWindowVisible(hwnd):
         windows.append(hwnd)
 
 
@@ -60,7 +59,8 @@ def process_image(im):  # processes the image the way you want
     return res
 
 
-def win_create_bitmap(window, w, h):
+def win_create_bitmap(window, w, h, left, top):
+    # hwndDC = win32gui.GetDC(window)
     hwndDC = win32gui.GetWindowDC(window)
     mfcDC = win32ui.CreateDCFromHandle(hwndDC)
     saveDC = mfcDC.CreateCompatibleDC()
@@ -69,11 +69,7 @@ def win_create_bitmap(window, w, h):
     saveBitMap.CreateCompatibleBitmap(mfcDC, w, h)
 
     saveDC.SelectObject(saveBitMap)
-
-    # Change the line below depending on whether you want the whole window
-    # or just the client area.
-    # result = windll.user32.PrintWindow(hwnd, saveDC.GetSafeHdc(), 1)
-    result = ctypes.windll.user32.PrintWindow(window, saveDC.GetSafeHdc(), 1)
+    result = ctypes.windll.user32.PrintWindow(window, saveDC.GetSafeHdc(), 1) #BOOL PrintWindow(HWND hwnd,HDC  hdcBlt,UINT nFlags;
     if result == 1:
         bmpinfo = saveBitMap.GetInfo()
         bmpstr = saveBitMap.GetBitmapBits(True)
@@ -92,16 +88,18 @@ def win_create_bitmap(window, w, h):
 
 
 def get_image_(window):
+    print ("|DEBUG| Current window HNDL: ", window)
     bbox = win32gui.GetWindowRect(window)
     left, top, right, bot = bbox
     w = right - left
     h = bot - top
 
+
     if (w > 0 and h > 0):
         try:
             while (1):
-                win_img, bool_img = win_create_bitmap(window, w, h)
-                if bool_img:  # PrintWindow Succeeded
+                win_img, bool_img = win_create_bitmap(window, w, h, left, top)
+                if bool_img:
                     cv_img = cv2.cvtColor(win_img, cv2.COLOR_RGBA2RGB)
                     # cv2.imshow('screen',process_image(cv_img))
                     cv2.imshow('screen', cv_img)
